@@ -1,0 +1,44 @@
+# ides
+.vscode
+.zed
+.idea
+.fleet
+
+# envs
+!.env.example
+.env*
+
+# Lua specific
+lua_modules/
+*.so
+*.dll
+*.dylib
+*.o
+*.obj
+*.out
+luacov.stats.out
+luacov.report.out
+*.lua.bak
+
+# KOReader specific
+crash.log
+*.t3
+
+# AI(s)
+.codex
+.claude
+.cursor
+GEMINI.md
+CLAUDE.md
+GEMINI_NEXT.md
+CLAUDE_NEXT.md
+OPENAI.md
+OPENAI_NEXT.md
+TURBO.md
+TURBO_NEXT.md
+CHATTY.md
+CHATTY_NEXT.md
+
+# misc
+.DS_Store
+Thumbs.db

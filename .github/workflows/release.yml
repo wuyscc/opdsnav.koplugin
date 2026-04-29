@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Package Plugin
+        run: |
+          # Define the plugin name
+          PLUGIN_NAME="opdsnav.koplugin"
+          
+          # Create a temporary staging directory
+          mkdir -p staging/$PLUGIN_NAME
+          
+          # Copy everything to staging except things we don't want in the release
+          rsync -av --progress . staging/$PLUGIN_NAME --exclude 'README.md' --exclude '.git*' --exclude '.github' --exclude 'staging' --exclude '*.zip'
+          
+          # Go to staging and zip the folder
+          cd staging
+          zip -r ../${PLUGIN_NAME}.zip .
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: opdsnav.koplugin.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
