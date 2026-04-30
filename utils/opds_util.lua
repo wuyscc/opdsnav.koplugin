@@ -25,8 +25,44 @@ end
 
 function OpdsUtil.getRealIndex(browser, current_item)
     if not current_item then return nil end
-    local current_idx = current_item.idx
+    if not browser or not browser.item_table then return current_item.idx end
+
+    local current_idx = tonumber(current_item.idx)
     local acq = OpdsUtil.getStreamAcquisition(current_item)
+
+    -- Some OPDS sources do not keep idx on items consistently. Recover it.
+    if not current_idx then
+        for i = 1, #browser.item_table do
+            local item = browser.item_table[i]
+            if item == current_item then
+                current_idx = i
+                break
+            end
+        end
+    end
+
+    if not current_idx and acq and acq.href then
+        for i = 1, #browser.item_table do
+            local item = browser.item_table[i]
+            local item_acq = OpdsUtil.getStreamAcquisition(item)
+            if item_acq and item_acq.href == acq.href then
+                current_idx = i
+                break
+            end
+        end
+    end
+
+    if not current_idx and current_item.title then
+        for i = 1, #browser.item_table do
+            local item = browser.item_table[i]
+            if item and item.title == current_item.title then
+                current_idx = i
+                break
+            end
+        end
+    end
+
+    if not current_idx then return tonumber(current_item.idx) end
 
     if not acq or not acq.href then return current_idx end
 

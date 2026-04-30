@@ -128,6 +128,10 @@ function OpdsNav:_hookImageViewer()
             local current_item = _G.OPDS_NAV_LAST_ITEM
             if browser and current_item then
                 local current_idx = OpdsUtil.getRealIndex(browser, current_item)
+                if not current_idx then
+                    logger.warn("OPDSNav: Could not resolve current index for next navigation")
+                    return orig_onShowNextImage(viewer_self)
+                end
 
                 local skip_continue = Settings:shouldSkipContinue()
 
@@ -207,6 +211,10 @@ function OpdsNav:_hookImageViewer()
             local current_item = _G.OPDS_NAV_LAST_ITEM
             if browser and current_item then
                 local current_idx = OpdsUtil.getRealIndex(browser, current_item)
+                if not current_idx then
+                    logger.warn("OPDSNav: Could not resolve current index for previous navigation")
+                    return orig_onShowPrevImage(viewer_self)
+                end
 
                 local skip_continue = Settings:shouldSkipContinue()
 
