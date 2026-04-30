@@ -2,11 +2,8 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
-  workflow_dispatch:
 
 jobs:
   build:
@@ -15,7 +12,27 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Generate short changelog
+        shell: bash
+        run: |
+          CURRENT_TAG="${GITHUB_REF_NAME}"
+          PREV_TAG="$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || true)"
+
+          {
+            echo "## What's changed"
+            echo
+            if [ -n "$PREV_TAG" ]; then
+              echo "Changes since \`$PREV_TAG\`:"
+              git log --pretty='- %s (%h)' "${PREV_TAG}..${CURRENT_TAG}" | head -n 20
+            else
+              echo "Initial release changes:"
+              git log --pretty='- %s (%h)' "${CURRENT_TAG}" | head -n 20
+            fi
+          } > RELEASE_NOTES.md
 
       - name: Package Plugin
         run: |
@@ -33,9 +50,9 @@ jobs:
           zip -r ../${PLUGIN_NAME}.zip .
           
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: opdsnav.koplugin.zip
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
