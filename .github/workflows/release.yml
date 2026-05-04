@@ -43,7 +43,7 @@ jobs:
           mkdir -p staging/$PLUGIN_NAME
           
           # Copy everything to staging except things we don't want in the release
-          rsync -av --progress . staging/$PLUGIN_NAME --exclude 'README.md' --exclude '.git*' --exclude '.github' --exclude 'staging' --exclude '*.zip'
+          rsync -av --progress . staging/$PLUGIN_NAME --exclude 'README.md' --exclude 'LICENSE' --exclude 'CHANGELOG.md' --exclude '.gitignore' --exclude 'RELEASE_NOTES.md' --exclude '.git*' --exclude '.github' --exclude 'staging' --exclude '*.zip'
           
           # Go to staging and zip the folder
           cd staging
@@ -54,5 +54,6 @@ jobs:
         with:
           files: opdsnav.koplugin.zip
           body_path: RELEASE_NOTES.md
+          prerelease: ${{ contains(github.ref_name, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
