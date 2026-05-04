@@ -305,15 +305,31 @@ function OpdsNav:_hookImageViewer()
             local browser = _G.OPDS_NAV_BROWSER
             if browser then
                 local delay = 0.2
-                -- Automatically check for custom sync provider to determine delay
+                -- Automatically check for progress sync settings to determine delay
                 local kosync_settings = G_reader_settings:readSetting("kosync")
-                if kosync_settings and kosync_settings.auto_sync and kosync_settings.custom_server then
-                    logger.info("OPDSNav: Custom sync provider detected, waiting longer for progress sync...")
-                    delay = 2.0
+                if kosync_settings and kosync_settings.auto_sync then
+                    if kosync_settings.custom_server then
+                        logger.info("OPDSNav: Custom sync provider detected, waiting longer for progress sync...")
+                        delay = 2.0
+                    else
+                        logger.info("OPDSNav: Progress sync detected, waiting for sync...")
+                        delay = 1.0
+                    end
                 end
 
+                local InfoMessage = require("ui/widget/infomessage")
+                if delay > 0.5 then
+                    UIManager:show(InfoMessage:new {
+                        text = _("Synchronizing progress..."),
+                        timeout = delay,
+                    })
+                end
 
                 UIManager:scheduleIn(delay, function()
+                    UIManager:show(InfoMessage:new {
+                        text = _("Refreshing OPDS catalog..."),
+                        timeout = 1,
+                    })
                     -- Refresh the current catalog view
                     if type(browser.updateCatalog) == "function" and browser.paths and #browser.paths > 0 then
                         local current_url = browser.paths[#browser.paths].url

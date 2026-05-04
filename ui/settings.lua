@@ -42,7 +42,7 @@ function Menu:getMenuTable()
             end,
         },
         {
-            text = _("Start next book at page 1"),
+            text = _("Start next book at first page"),
             checked_func = function()
                 return Settings:getSettings().opds_nav_force_first_page
             end,
@@ -66,7 +66,7 @@ function Menu:getMenuTable()
             end
         },
         {
-            text = _("Prevent navigation if book not fully loaded"),
+            text = _("Prevent navigation if page stream not fully loaded"),
             checked_func = function()
                 return Settings:shouldPreventPrematureNav()
             end,
@@ -78,7 +78,7 @@ function Menu:getMenuTable()
             end
         },
         {
-            text = _("Refresh catalog on exit"),
+            text = _("Refresh OPDS catalog on exit"),
             checked_func = function()
                 return Settings:shouldRefreshOnExit()
             end,
