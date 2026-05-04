@@ -4,11 +4,15 @@ local Settings = {}
 local SETTINGS_KEY = "opds_nav_settings"
 
 local DEFAULTS = {
-    opds_nav_enabled          = true, -- master toggle for auto next/prev
-    opds_nav_skip_continue    = true, -- skip "Continue From" as navigation targets
-    opds_nav_force_first_page = true, -- always start next book at page 1
-    opds_nav_notify_next_load = true, -- show "Loading next book" notification
+    opds_nav_enabled               = true, -- master toggle for auto next/prev
+    opds_nav_skip_continue         = true, -- skip "Continue From" as navigation targets
+    opds_nav_force_first_page      = true, -- always start next book at page 1
+    opds_nav_notify_next_load      = true, -- show "Loading next book" notification
+    opds_nav_prevent_premature_nav = true, -- prevent navigation if current stream is not fully loaded
+    opds_nav_refresh_on_exit       = true, -- refresh OPDS catalog after exiting stream
 }
+
+
 
 local function getSettingsStore()
     return G_koreader_settings or G_reader_settings
@@ -63,5 +67,15 @@ end
 function Settings:shouldNotifyNextLoad()
     return self:getSettings().opds_nav_notify_next_load
 end
+
+function Settings:shouldPreventPrematureNav()
+    return self:getSettings().opds_nav_prevent_premature_nav
+end
+
+function Settings:shouldRefreshOnExit()
+    return self:getSettings().opds_nav_refresh_on_exit
+end
+
+
 
 return Settings

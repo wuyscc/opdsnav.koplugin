@@ -64,7 +64,31 @@ function Menu:getMenuTable()
                 refreshMenu(menu_widget)
                 return true
             end
-        }
+        },
+        {
+            text = _("Prevent navigation if book not fully loaded"),
+            checked_func = function()
+                return Settings:shouldPreventPrematureNav()
+            end,
+            keep_menu_open = true,
+            callback = function(menu_widget)
+                Settings:toggle("opds_nav_prevent_premature_nav")
+                refreshMenu(menu_widget)
+                return true
+            end
+        },
+        {
+            text = _("Refresh catalog on exit"),
+            checked_func = function()
+                return Settings:shouldRefreshOnExit()
+            end,
+            keep_menu_open = true,
+            callback = function(menu_widget)
+                Settings:toggle("opds_nav_refresh_on_exit")
+                refreshMenu(menu_widget)
+                return true
+            end
+        },
     }
 end
 

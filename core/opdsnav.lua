@@ -127,6 +127,16 @@ function OpdsNav:_hookImageViewer()
             local browser = _G.OPDS_NAV_BROWSER
             local current_item = _G.OPDS_NAV_LAST_ITEM
             if browser and current_item then
+                if Settings:shouldPreventPrematureNav() then
+                    local current_acq = OpdsUtil.getStreamAcquisition(current_item)
+                    if current_acq and current_acq.count then
+                        local count = tonumber(current_acq.count)
+                        if count and viewer_self._images_list_nb < count then
+                            logger.info("OPDSNav: Stream not fully loaded, preventing next book navigation")
+                            return orig_onShowNextImage(viewer_self)
+                        end
+                    end
+                end
                 local current_idx = OpdsUtil.getRealIndex(browser, current_item)
                 if not current_idx then
                     logger.warn("OPDSNav: Could not resolve current index for next navigation")
@@ -210,6 +220,16 @@ function OpdsNav:_hookImageViewer()
             local browser = _G.OPDS_NAV_BROWSER
             local current_item = _G.OPDS_NAV_LAST_ITEM
             if browser and current_item then
+                if Settings:shouldPreventPrematureNav() then
+                    local current_acq = OpdsUtil.getStreamAcquisition(current_item)
+                    if current_acq and current_acq.count then
+                        local count = tonumber(current_acq.count)
+                        if count and viewer_self._images_list_nb < count then
+                            logger.info("OPDSNav: Stream not fully loaded, preventing prev book navigation")
+                            return orig_onShowPrevImage(viewer_self)
+                        end
+                    end
+                end
                 local current_idx = OpdsUtil.getRealIndex(browser, current_item)
                 if not current_idx then
                     logger.warn("OPDSNav: Could not resolve current index for previous navigation")
@@ -273,6 +293,47 @@ function OpdsNav:_hookImageViewer()
         return orig_onShowPrevImage(viewer_self)
     end
     ImageViewer.onShowPrevImage_opds_nav_hooked = true
+
+    local orig_onClose = ImageViewer.onClose
+    ImageViewer.onClose = function(viewer_self)
+        local ret
+        if type(orig_onClose) == "function" then
+            ret = orig_onClose(viewer_self)
+        end
+
+        if viewer_self.is_opds_stream and Settings:shouldRefreshOnExit() then
+            local browser = _G.OPDS_NAV_BROWSER
+            if browser then
+                local delay = 0.2
+                -- Automatically check for custom sync provider to determine delay
+                local kosync_settings = G_reader_settings:readSetting("kosync")
+                if kosync_settings and kosync_settings.auto_sync and kosync_settings.custom_server then
+                    logger.info("OPDSNav: Custom sync provider detected, waiting longer for progress sync...")
+                    delay = 2.0
+                end
+
+
+                UIManager:scheduleIn(delay, function()
+                    -- Refresh the current catalog view
+                    if type(browser.updateCatalog) == "function" and browser.paths and #browser.paths > 0 then
+                        local current_url = browser.paths[#browser.paths].url
+                        if current_url then
+                            logger.info("OPDSNav: Refreshing OPDS catalog URL: " .. tostring(current_url))
+                            browser:updateCatalog(current_url, true)
+                        end
+                    elseif type(browser.onRefresh) == "function" then
+                        logger.info("OPDSNav: Refreshing OPDS browser via onRefresh")
+                        browser:onRefresh()
+                    elseif type(browser.updateItems) == "function" then
+                        logger.info("OPDSNav: Updating OPDS browser items via updateItems")
+                        browser:updateItems()
+                    end
+                end)
+            end
+        end
+
+        return ret
+    end
 end
 
 return OpdsNav
